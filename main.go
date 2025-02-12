@@ -22,6 +22,6 @@ func main() {
 	r.HandleFunc("/api/cart", handlers.AddToCart(client)).Methods("POST")
 
 	// Iniciar el servidor
-	log.Println("Servidor iniciado en http://localhost:8081")
-	log.Fatal(http.ListenAndServe(":8081", r))
+	log.Println("Servidor iniciado en http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
