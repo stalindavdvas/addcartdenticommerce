@@ -19,7 +19,7 @@ func main() {
 	r := mux.NewRouter()
 
 	// Ruta para agregar productos al carrito
-	r.HandleFunc("/api/cart", handlers.AddToCart(client)).Methods("POST")
+	r.HandleFunc("/api/addcart", handlers.AddToCart(client)).Methods("POST")
 
 	// Iniciar el servidor
 	log.Println("Servidor iniciado en http://localhost:8080")
