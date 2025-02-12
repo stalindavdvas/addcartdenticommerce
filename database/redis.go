@@ -14,9 +14,9 @@ var ctx = context.Background()
 func InitRedis() *redis.Client {
 	// Configuración de la conexión a Redis
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379", // Dirección de Redis
-		Password: "",               // Contraseña (si aplica)
-		DB:       0,                // Base de datos Redis
+		Addr:     "52.5.28.74:6379", // Dirección de Redis
+		Password: "",                // Contraseña (si aplica)
+		DB:       0,                 // Base de datos Redis
 	})
 
 	// Verificar la conexión
