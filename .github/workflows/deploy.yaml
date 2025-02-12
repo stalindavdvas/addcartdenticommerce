@@ -39,4 +39,4 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/addcart:latest
           docker stop addcart || true
           docker rm addcart || true
-          docker run -d --name addcart -p 5000:5000 ${{ secrets.DOCKER_HUB_USERNAME }}/addcart:latest
+          docker run -d --name addcart -p 8080:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/addcart:latest
