@@ -4,7 +4,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,41 +15,53 @@ var ctx = context.Background()
 
 func AddToCart(client *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Simulación de ID de usuario (puedes obtenerlo de un token JWT o cookies)
-		userID := "user:1" // Clave única para el carrito del usuario
 
-		// Decodificar el cuerpo de la solicitud
+		userID := "user:1" // User key
+
+		// Decode body
 		var req struct {
-			ProductID int `json:"product_id"`
-			Quantity  int `json:"quantity"`
+			ProductID int     `json:"product_id"`
+			Name      string  `json:"name"`     // Name
+			Quantity  int     `json:"quantity"` // Stock
+			Price     float64 `json:"price"`    // Price
 		}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			http.Error(w, "Solicitud inválida", http.StatusBadRequest)
+			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
 
-		// Validar los datos
-		if req.ProductID <= 0 || req.Quantity <= 0 {
-			http.Error(w, "El product_id y quantity deben ser mayores que 0", http.StatusBadRequest)
+		// Valid data
+		if req.ProductID <= 0 || req.Quantity <= 0 || req.Name == "" || req.Price <= 0 {
+			http.Error(w, "El product_id, name, quantity y price deben ser válidos", http.StatusBadRequest)
 			return
 		}
 
-		// Agregar logs para depurar
-		fmt.Printf("Intentando agregar producto: product_id=%d, quantity=%d\n", req.ProductID, req.Quantity)
+		// JSON to save
+		productData := map[string]interface{}{
+			"name":     req.Name,
+			"quantity": req.Quantity,
+			"price":    req.Price,
+		}
 
-		// Agregar o actualizar el producto en el carrito
-		err = client.HIncrBy(ctx, userID, strconv.Itoa(req.ProductID), int64(req.Quantity)).Err()
+		// Convert to JSON
+		productJSON, err := json.Marshal(productData)
 		if err != nil {
-			fmt.Printf("Error al ejecutar HIncrBy: %v\n", err) // Log de error
-			http.Error(w, "Error al agregar al carrito", http.StatusInternalServerError)
+			http.Error(w, "Error to process information product", http.StatusInternalServerError)
 			return
 		}
 
-		// Configurar tiempo de expiración (opcional)
-		client.Expire(ctx, userID, 24*time.Hour) // El carrito caduca después de 24 horas
+		// Save on redis
+		err = client.HSet(ctx, userID, strconv.Itoa(req.ProductID), productJSON).Err()
+		if err != nil {
+			http.Error(w, "Failure to add cart", http.StatusInternalServerError)
+			return
+		}
+
+		// time to expire
+		client.Expire(ctx, userID, 24*time.Hour) // Expire 24 hours
 
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("Producto agregado al carrito"))
+		w.Write([]byte("Product Add"))
 	}
 }
